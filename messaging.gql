@@ -1,0 +1,59 @@
+#
+# The list of types and operations supported by Message broker capability providers
+#
+
+directive @namespace(name: String) on SCHEMA
+directive @operation(name: String) on FIELD_DEFINITION
+directive @rename(name: String) on FIELD_DEFINITION | INPUT_FIELD_DEFINITION
+directive @unary on FIELD_DEFINITION
+directive @map on FIELD_DEFINITION | INPUT_FIELD_DEFINITION
+
+schema @namespace(name: "wascc:messaging") {
+  query: Query
+  mutation: Mutation
+}
+
+"Signed 64-bit Integers"
+scalar I64
+
+"Used for ignored return values"
+scalar Void
+
+"Used for byte arrays/vectors"
+scalar Bytes
+
+"Query is currently unused"
+type Query {
+  "Satisfy the linter with a placeholder"
+  placeholder: Boolean!
+}
+
+"Mutation represents all of the operations supported."
+type Mutation {
+  "Publish a message from the actor"
+  publishMessage(message: BrokerMessage!): Void! @unary @operation(name: "Publish")
+  "Receive a message from a subscription"
+  deliverMessage(message: BrokerMessage!): Void! @unary @operation(name: "DeliverMessage")
+  "Request a response on a subject"
+  request(request: RequestMessage!): Bytes  @unary @operation(name: "Request")
+}
+
+"A message published or received through a broker"
+input BrokerMessage {
+    "The subject or topic on which the message is sent"
+    subject: String!
+    "An optional reply-to subject"
+    replyTo: String
+    "The body of the message"
+    body: Bytes!
+}
+
+"A message published in anticipation of a reply"
+input RequestMessage {
+    "The subject or topic on which the request is sent. Note that the reply topic generation is up to the provider"
+    subject: String!
+    "The body of the message"
+    body: Bytes!
+    "Timeout (in milliseconds) to await a reply"
+    timeout: I64
+}

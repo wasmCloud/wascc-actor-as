@@ -1,0 +1,73 @@
+#
+# The list of types and operations supported by HTTP Server capability providers
+#
+
+directive @namespace(name: String) on SCHEMA
+directive @operation(name: String) on FIELD_DEFINITION
+directive @rename(name: String) on FIELD_DEFINITION | INPUT_FIELD_DEFINITION
+directive @unary on FIELD_DEFINITION
+directive @map on FIELD_DEFINITION | INPUT_FIELD_DEFINITION
+
+schema @namespace(name: "wascc:httpserver") {
+  query: Query
+  mutation: Mutation
+}
+
+"Unsigned 32-bit integers"
+scalar U32
+"Bytes are an array of bytes"
+scalar Bytes
+
+"Query represents all data retrieval operations."
+type Query {
+  "Satify the linter with a dummy"
+  dummy: Boolean!
+}
+
+"Mutation represents all the functions supported."
+type Mutation {
+  "Handles an HTTP request"
+  handleRequest(request: Request!): Response! @unary @operation(name: "HandleRequest")
+}
+
+"Represents an HTTP request, handled by the guest module"
+input Request {
+  "The HTTP method."
+  method: String!
+  "The path."
+  path: String!
+  "The raw query string."
+  queryString: String! @rename(name: "query_string")
+  "The HTTP request headers."
+  header: [HeaderInput!]! @map
+  "The payload of the HTTP request"
+  body: Bytes!
+}
+
+"Represents a single header."
+input HeaderInput {
+  "The header name."
+  name: String!
+  "The header value."
+  value: String!
+}
+
+"Represents an HTTP response that the guest module would like to return in response to a request command."
+type Response {
+  "The HTTP status code."
+  status_code: U32!
+  "The HTTP status name."
+  status: String!
+  "The HTTP request headers."
+  header: [Header!]! @map
+  "The payload of the HTTP response"
+  body: Bytes!
+}
+
+"Represents a single header."
+type Header {
+  "The header name."
+  name: String!
+  "The header value."
+  value: String!
+}

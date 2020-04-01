@@ -1,0 +1,35 @@
+#
+# The list of types and operations supported by Event Streams capability providers
+#
+
+directive @namespace(name: String) on SCHEMA
+directive @operation(name: String) on FIELD_DEFINITION
+directive @rename(name: String) on FIELD_DEFINITION | INPUT_FIELD_DEFINITION
+directive @unary on FIELD_DEFINITION
+directive @map on FIELD_DEFINITION | INPUT_FIELD_DEFINITION | ARGUMENT_DEFINITION
+
+schema @namespace(name: "wascc:logging") {
+  query: Query
+  mutation: Mutation
+}
+
+"Unsigned 32-bit Integers"
+scalar U32
+
+"Used for byte arrays/vectors"
+scalar Bytes
+
+"For ignored return values"
+scalar Void
+
+"Query is currently unused"
+type Query {
+  "Satisfy the linter with a placeholder"
+  placeholder: Boolean!
+}
+
+"Mutation represents all of the operations supported."
+type Mutation {
+    "Function called by the actor to write a log entry"
+    write(level: U32, body: String!): Void!
+}

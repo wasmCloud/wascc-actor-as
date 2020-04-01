@@ -1,0 +1,38 @@
+{
+    "name": "wascc-actor-as",
+    "version": "0.0.1",
+    "description": "Build waSCC Actors in AssemblyScript",
+    "main": "index.js",
+    "scripts": {
+        "http": "graphql-schema-linter httpserver.gql && wapc-gql2as httpserver.gql > assembly/httpserver.ts && prettier --write assembly/httpserver.ts",
+        "keyvalue": "graphql-schema-linter kv.gql && wapc-gql2as kv.gql > assembly/kv.ts && prettier --write assembly/keyvvalue.ts",
+        "messaging": "graphql-schema-linter messaging.gql && wapc-gql2as messaging.gql > assembly/messaging.ts && prettier --write assembly/messaging.ts",
+        "events": "graphql-schema-linter eventstreams.gql && wapc-gql2as eventstreams.gql > assembly/eventstreams.ts && prettier --write assembly/eventstreams.ts",
+        "logging": "graphql-schema-linter logging.gql && wapc-gql2as logging.gql > assembly/logging.ts && prettier --write assembly/logging.ts",
+        "codegen": "npm run http && npm run keyvalue && npm run messaging && npm run events && npm run logging",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "",
+    "license": "Apache-2.0",
+    "graphql-schema-linter": {
+        "rules": [
+            "deprecations-have-a-reason",
+            "enum-values-all-caps",
+            "enum-values-have-descriptions",
+            "enum-values-sorted-alphabetically",
+            "fields-have-descriptions",
+            "input-object-values-have-descriptions",
+            "types-are-capitalized",
+            "types-have-descriptions"
+        ]
+    },
+    "dependencies": {
+        "wapc-guest-as": "git+https://github.com/wapc/wapc-guest-as#v0.2.0",
+        "as-msgpack": "git+https://github.com/wapc/as-msgpack#v0.1.5"
+    },
+    "devDependencies": {
+        "graphql-schema-linter": "^0.2.0",
+        "prettier": "^2.0.2",
+        "assemblyscript": "^0.9.4"
+    }
+}
