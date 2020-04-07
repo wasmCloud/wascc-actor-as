@@ -5,7 +5,7 @@ interface {
   "Sets the value of a key, leave expires 0 to never expire the key"
   set(key: string, value: string, expires: i32): SetResponse @operation(name: "Set")
   "Performs an atomic add operation against the value stored in the given key"
-  atomicAdd(key: string, value: i32): i32 @operation(name: "Add")
+  atomicAdd(key: string, value: i32): AddResponse @operation(name: "Add")
   "Deletes a key from the store"
   delete(key: string): DelResponse @operation(name: "Del")
   "Queries the value of a key"
@@ -36,6 +36,12 @@ interface {
 type SetResponse {
     "The value of the response"
     value: string
+}
+
+"Response to an atomic add"
+type AddResponse {
+  "The new value"
+  value: i32
 }
 
 "Response to a deletion"

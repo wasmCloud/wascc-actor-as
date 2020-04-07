@@ -621,7 +621,7 @@ export class Host {
     this.binding = binding;
   }
 
-  atomicAdd(key: string, value: i32): i32 {
+  atomicAdd(key: string, value: i32): AddResponse {
     const inputArgs = new AtomicAddArgs();
     inputArgs.key = key;
     inputArgs.value = value;
@@ -632,9 +632,7 @@ export class Host {
       inputArgs.toBuffer()
     );
     const decoder = new Decoder(payload);
-    const ret = decoder.readInt32();
-
-    return ret;
+    return AddResponse.decode(decoder);
   }
 
   delete(key: string): DelResponse {
@@ -816,7 +814,7 @@ export class Host {
 }
 
 export class Handlers {
-  static atomicAdd(handler: (key: string, value: i32) => i32): void {
+  static atomicAdd(handler: (key: string, value: i32) => AddResponse): void {
     atomicAddHandler = handler;
     register("Add", atomicAddWrapper);
   }
@@ -901,19 +899,13 @@ export class Handlers {
 
 //// Interface
 
-var atomicAddHandler: (key: string, value: i32) => i32;
+var atomicAddHandler: (key: string, value: i32) => AddResponse;
 function atomicAddWrapper(payload: ArrayBuffer): ArrayBuffer {
   const decoder = new Decoder(payload);
   const inputArgs = new AtomicAddArgs();
   inputArgs.decode(decoder);
   const response = atomicAddHandler(inputArgs.key, inputArgs.value);
-
-  const sizer = new Sizer();
-  sizer.writeInt32(response);
-  const ua = new ArrayBuffer(sizer.length);
-  const encoder = new Encoder(ua);
-  encoder.writeInt32(response);
-  return ua;
+  return response.toBuffer();
 }
 var deleteHandler: (key: string) => DelResponse;
 function deleteWrapper(payload: ArrayBuffer): ArrayBuffer {
@@ -1029,6 +1021,79 @@ function setUnionWrapper(payload: ArrayBuffer): ArrayBuffer {
 }
 
 //// Types
+
+// Response to an atomic add
+export class AddResponse {
+  // The new value
+  value: i32;
+
+  constructor() {
+    this.value = 0;
+  }
+
+  static decodeNullable(decoder: Decoder): AddResponse | null {
+    if (decoder.isNextNil()) return null;
+    return AddResponse.decode(decoder);
+  }
+
+  static decode(decoder: Decoder): AddResponse {
+    const o = new AddResponse();
+    o.decode(decoder);
+    return o;
+  }
+
+  decode(decoder: Decoder): void {
+    var numFields = decoder.readMapSize();
+
+    while (numFields > 0) {
+      numFields--;
+      const field = decoder.readString();
+      if (field == "value") {
+        this.value = decoder.readInt32();
+      } else {
+        decoder.skip();
+      }
+    }
+  }
+
+  size(sizer: Sizer): void {
+    sizer.writeMapSize(1);
+    sizer.writeString("value");
+    sizer.writeInt32(this.value);
+  }
+
+  encode(encoder: Encoder): void {
+    encoder.writeMapSize(1);
+    encoder.writeString("value");
+    encoder.writeInt32(this.value);
+  }
+
+  toBuffer(): ArrayBuffer {
+    let sizer = new Sizer();
+    this.size(sizer);
+    let buffer = new ArrayBuffer(sizer.length);
+    let encoder = new Encoder(buffer);
+    this.encode(encoder);
+    return buffer;
+  }
+}
+
+export class AddResponseBuilder {
+  instance: AddResponse;
+
+  constructor() {
+    this.instance = new AddResponse();
+  }
+
+  withValue(value: i32): AddResponseBuilder {
+    this.instance.value = value;
+    return this;
+  }
+
+  build(): AddResponse {
+    return this.instance;
+  }
+}
 
 // Response to a deletion
 export class DelResponse {
