@@ -1,0 +1,38 @@
+namespace "wascc:blobstore"
+
+"Operations supported by an object/blob store capability provider"
+interface {
+    "Creates a new container"
+    createContainer(id: string): void @operation(name: "CreateContainer")
+    "Removes a container"
+    removeContainer(id: string): void @operation(name: "RemoveContainer")
+    "Uploads a single chunk of a file to the store"
+    uploadChunk(sequenceNo: u64, container: string, id: string, totalBytes: u64, chunkSize: u64, chunkBytes: bytes): void @operation(name: "UploadChunk")
+    "Tells the host object store to begin a new upload. Leave bytes empty and sequence number 0"
+    startUpload(sequenceNo: u64, container: string, id: string, totalBytes: u64, chunkSize: u64, chunkBytes: bytes): void @operation(name: "StartUpload")
+    "Remove an object from the store. Leave byte size 0"
+    removeObject(id: string, container: string, byteSize: u64): void @operation(name: "RemoveObject")
+    "Obtains information about an object. Leave byte size 0"
+    getObjectInfo(id: string, container: string, byteSize: u64): void @operation(name: "GetObjectInfo")
+    "Lists objects within a container"
+    listObjects(id: string): BlobList @operation(name: "ListObjects")
+    "Starts a download stream request (items will be delivered to the actor in chunks)"
+    startDownload(id: string, container: string, chunkSize: u64): void @operation(name: "StartDownload")
+    "Actor receives a chunk from the host after a stream request is acknowledged"
+    receiveChunk(sequenceNo: u64, container: string, id: string, totalBytes: u64, chunkSize: u64, chunkBytes: bytes): void @operation(name: "ReceiveChunk")
+}
+
+"A list of metadata about stored objects"
+type BlobList {
+    blobs: [Blob]
+}
+
+"Information about a stored object"
+type Blob {
+    "The blob ID"
+    id: string
+    "The container ID"
+    container: string
+    "Total number of bytes (file size)"
+    byteSize: u64
+}

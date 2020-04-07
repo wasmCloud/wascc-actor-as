@@ -1,0 +1,25 @@
+namespace "wascc:extras"
+
+"Operations supported by an extras capability provider"
+interface {
+  "Request a new GUID from the host"
+  newGuid{request: GeneratorRequest}: GeneratorResult @operation(name: "RequestGuid")
+  "Request a new random number from the host"
+  newRandom{request: GeneratorRequest}: GeneratorResult @operation(name: "RequestRandom")
+  "Request a new sequence number from the host"
+  newSequence{request: GeneratorRequest}: GeneratorResult @operation(name: "RequestSequence")  
+}
+
+"Used for value generation"
+type GeneratorRequest {
+    "The request is for a guid"
+    guid: bool
+    "The request is for a sequence"
+    sequence: bool
+    "The request is for a random number"
+    random: bool
+    "Minimum value"
+    min: u32
+    "Maximum value"
+    max: u32
+}

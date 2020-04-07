@@ -9,7 +9,9 @@
         "messaging": "widl2as messaging.widl > assembly/messaging.ts && prettier --write assembly/messaging.ts",
         "events": "widl2as eventstreams.widl > assembly/eventstreams.ts && prettier --write assembly/eventstreams.ts",
         "logging": "widl2as logging.widl > assembly/logging.ts && prettier --write assembly/logging.ts",
-        "codegen": "npm run http && npm run kv && npm run messaging && npm run events && npm run logging",
+        "extras": "widl2as extras.widl > assembly/extras.ts && prettier --write assembly/extras.ts",
+        "blobstore": "widl2as blobstore.widl > assembly/blobstore.ts && prettier --write assembly/blobstore.ts",
+        "codegen": "npm run http && npm run kv && npm run messaging && npm run events && npm run logging && npm run extras && npm run blobstore",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "author": "",

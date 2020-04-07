@@ -1,13 +1,72 @@
 namespace "wascc:keyvalue"
 
-"All the functions supported."
+"Operations supported by the key value capability"
 interface {
-  "Sets a key"
+  "Sets the value of a key, leave expires 0 to never expire the key"
   set(key: string, value: string, expires: i32): SetResponse @operation(name: "Set")
+  "Deletes a key from the store"
+  delete(key: string): DelResponse @operation(name: "Del")
+  "Queries the value of a key"
+  get(key: string): GetResponse @operation(name: "Get")  
+  "Clears the contents of a list"
+  listClear(key: string): DelResponse @operation(name: "Clear")
+  "Queries the items in a list"
+  listRange(key: string, start: i32, stop: i32): ListRangeResponse @operation(name: "Range")
+  "Pushes an item into a list"
+  listPush(key: string, item: string): ListResponse @operation(name: "Push")  
+  "Deletes an item from a list"
+  listDeleteItem(key: string, item: string): ListResponse @operation(name: "ListItemDelete")
+  "Adds an item to a set"
+  setAdd(key: string, item: string): SetOperationResponse @operation(name: "SetAdd")
+  "Removes an item from a set"
+  setRemove(key: string, item: string): SetOperationResponse @operation(name: "SetRemove")
+  "Obtains the union of all sets indicated by the list of keys"
+  setUnion(keys: [string]): SetQueryResponse @operation(name: "SetUnion")
+  "Obtains the intersection of all sets indicated by the list of keys"
+  setIntersection(keys: [string]): SetQueryResponse @operation(name: "SetIntersection")
+  "Queries the list of all members of a given set"
+  setQuery(key: string): SetQueryResponse @operation(name: "SetQuery")
+  "Indicates whether a given key exists, regardless of type"
+  exists(key: string): GetResponse @operation(name: "KeyExists")
 }
 
 "Response to a set request"
 type SetResponse {
     "The value of the response"
     value: string
+}
+
+"Response to a deletion"
+type DelResponse {
+  "The key that was deleted"
+  key: string
+}
+
+"Response to a get"
+type GetResponse {
+  "The requested value"
+  value: string
+  "Indicates whether the requested key exists"
+  exists: bool
+}
+
+"Response to a range request"
+type ListRangeResponse {
+  "The values in the list"
+  values: [string]
+}
+
+"Generaal-purpose response to several set operations"
+type SetOperationResponse {
+  newCount: i32
+}
+
+"Results of a set query"
+type SetQueryResponse {
+  values: [string]
+}
+
+"General-purpose response to several list operations"
+type ListResponse {
+  newCount: i32
 }
