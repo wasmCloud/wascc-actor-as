@@ -210,7 +210,7 @@ export class Response {
   // The HTTP status name.
   status: string;
 
-  // The HTTP request headers.
+  // The HTTP response headers.
   header: Map<string, string>;
 
   // The payload of the HTTP response

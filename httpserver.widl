@@ -1,6 +1,6 @@
 namespace "wascc:httpserver"
 
-"All the functions supported."
+"Operations available for the HTTP server capability."
 interface {
   "Handles an HTTP request"
   handleRequest{request: Request}: Response @operation(name: "HandleRequest")
@@ -26,7 +26,7 @@ type Response {
   statusCode: u32
   "The HTTP status name."
   status: string
-  "The HTTP request headers."
+  "The HTTP response headers."
   header: {string : string}
   "The payload of the HTTP response"
   body: bytes
