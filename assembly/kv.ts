@@ -7,6 +7,51 @@ import { Decoder, Encoder, Sizer, Value } from "as-msgpack";
 
 //// Args
 
+class AtomicAddArgs {
+  key: string;
+  value: i32;
+
+  decode(decoder: Decoder): void {
+    let numFields = decoder.readMapSize();
+    while (numFields > 0) {
+      numFields--;
+      const field = decoder.readString();
+      if (field == "key") {
+        this.key = decoder.readString();
+      } else if (field == "value") {
+        this.value = decoder.readInt32();
+      } else {
+        decoder.skip();
+      }
+    }
+  }
+
+  size(sizer: Sizer): void {
+    sizer.writeMapSize(2);
+    sizer.writeString("key");
+    sizer.writeString(this.key);
+    sizer.writeString("value");
+    sizer.writeInt32(this.value);
+  }
+
+  encode(encoder: Encoder): void {
+    encoder.writeMapSize(2);
+    encoder.writeString("key");
+    encoder.writeString(this.key);
+    encoder.writeString("value");
+    encoder.writeInt32(this.value);
+  }
+
+  toBuffer(): ArrayBuffer {
+    let sizer = new Sizer();
+    this.size(sizer);
+    let buffer = new ArrayBuffer(sizer.length);
+    let encoder = new Encoder(buffer);
+    this.encode(encoder);
+    return buffer;
+  }
+}
+
 class DeleteArgs {
   key: string;
 
@@ -576,6 +621,22 @@ export class Host {
     this.binding = binding;
   }
 
+  atomicAdd(key: string, value: i32): i32 {
+    const inputArgs = new AtomicAddArgs();
+    inputArgs.key = key;
+    inputArgs.value = value;
+    const payload = hostCall(
+      this.binding,
+      "wascc:keyvalue",
+      "Add",
+      inputArgs.toBuffer()
+    );
+    const decoder = new Decoder(payload);
+    const ret = decoder.readInt32();
+
+    return ret;
+  }
+
   delete(key: string): DelResponse {
     const inputArgs = new DeleteArgs();
     inputArgs.key = key;
@@ -755,6 +816,11 @@ export class Host {
 }
 
 export class Handlers {
+  static atomicAdd(handler: (key: string, value: i32) => i32): void {
+    atomicAddHandler = handler;
+    register("Add", atomicAddWrapper);
+  }
+
   static delete(handler: (key: string) => DelResponse): void {
     deleteHandler = handler;
     register("Del", deleteWrapper);
@@ -835,6 +901,20 @@ export class Handlers {
 
 //// Interface
 
+var atomicAddHandler: (key: string, value: i32) => i32;
+function atomicAddWrapper(payload: ArrayBuffer): ArrayBuffer {
+  const decoder = new Decoder(payload);
+  const inputArgs = new AtomicAddArgs();
+  inputArgs.decode(decoder);
+  const response = atomicAddHandler(inputArgs.key, inputArgs.value);
+
+  const sizer = new Sizer();
+  sizer.writeInt32(response);
+  const ua = new ArrayBuffer(sizer.length);
+  const encoder = new Encoder(ua);
+  encoder.writeInt32(response);
+  return ua;
+}
 var deleteHandler: (key: string) => DelResponse;
 function deleteWrapper(payload: ArrayBuffer): ArrayBuffer {
   const decoder = new Decoder(payload);
