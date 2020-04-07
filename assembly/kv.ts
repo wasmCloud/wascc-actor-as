@@ -1,15 +1,5 @@
-import { register, hostCall, handleAbort } from "wapc-guest-as";
+import { register, hostCall } from "wapc-guest-as";
 import { Decoder, Encoder, Sizer, Value } from "as-msgpack";
-
-// Abort function
-function abort(
-  message: string | null,
-  fileName: string | null,
-  lineNumber: u32,
-  columnNumber: u32
-): void {
-  handleAbort(message, fileName, lineNumber, columnNumber);
-}
 
 //// Scalars
 
@@ -20,7 +10,7 @@ function abort(
 class SetArgs {
   key: string;
   value: string;
-  expires_s: i32;
+  expires: i32;
 
   decode(decoder: Decoder): void {
     let numFields = decoder.readMapSize();
@@ -31,8 +21,8 @@ class SetArgs {
         this.key = decoder.readString();
       } else if (field == "value") {
         this.value = decoder.readString();
-      } else if (field == "expires_s") {
-        this.expires_s = decoder.readInt32();
+      } else if (field == "expires") {
+        this.expires = decoder.readInt32();
       } else {
         decoder.skip();
       }
@@ -45,8 +35,8 @@ class SetArgs {
     sizer.writeString(this.key);
     sizer.writeString("value");
     sizer.writeString(this.value);
-    sizer.writeString("expires_s");
-    sizer.writeInt32(this.expires_s);
+    sizer.writeString("expires");
+    sizer.writeInt32(this.expires);
   }
 
   encode(encoder: Encoder): void {
@@ -55,8 +45,8 @@ class SetArgs {
     encoder.writeString(this.key);
     encoder.writeString("value");
     encoder.writeString(this.value);
-    encoder.writeString("expires_s");
-    encoder.writeInt32(this.expires_s);
+    encoder.writeString("expires");
+    encoder.writeInt32(this.expires);
   }
 
   toBuffer(): ArrayBuffer {
@@ -70,21 +60,21 @@ class SetArgs {
 }
 
 export class Host {
-  binding: String;
+  binding: string;
 
-  constructor(binding: String) {
+  constructor(binding: string) {
     this.binding = binding;
   }
 
-  set(key: string, value: string, expiresS: i32): SetResponse {
+  set(key: string, value: string, expires: i32): SetResponse {
     const inputArgs = new SetArgs();
     inputArgs.key = key;
     inputArgs.value = value;
-    inputArgs.expires_s = expiresS;
+    inputArgs.expires = expires;
     const payload = hostCall(
       this.binding,
       "wascc:keyvalue",
-      "set",
+      "Set",
       inputArgs.toBuffer()
     );
     const decoder = new Decoder(payload);
@@ -94,16 +84,16 @@ export class Host {
 
 export class Handlers {
   static set(
-    handler: (key: string, value: string, expires_s: i32) => SetResponse
+    handler: (key: string, value: string, expires: i32) => SetResponse
   ): void {
     setHandler = handler;
-    register("set", setWrapper);
+    register("Set", setWrapper);
   }
 }
 
-//// Mutations
+//// Interface
 
-var setHandler: (key: string, value: string, expires_s: i32) => SetResponse;
+var setHandler: (key: string, value: string, expires: i32) => SetResponse;
 function setWrapper(payload: ArrayBuffer): ArrayBuffer {
   const decoder = new Decoder(payload);
   const inputArgs = new SetArgs();
@@ -111,7 +101,7 @@ function setWrapper(payload: ArrayBuffer): ArrayBuffer {
   const response = setHandler(
     inputArgs.key,
     inputArgs.value,
-    inputArgs.expires_s
+    inputArgs.expires
   );
   return response.toBuffer();
 }
@@ -175,22 +165,18 @@ export class SetResponse {
 }
 
 export class SetResponseBuilder {
-  value: string;
+  instance: SetResponse;
 
-  constructor() {}
+  constructor() {
+    this.instance = new SetResponse();
+  }
 
   withValue(value: string): SetResponseBuilder {
-    this.value = value;
+    this.instance.value = value;
     return this;
   }
 
   build(): SetResponse {
-    let setresponse = new SetResponse();
-
-    setresponse.value = this.value;
-    return setresponse;
+    return this.instance;
   }
 }
-
-////Inputs
-////Interfaces

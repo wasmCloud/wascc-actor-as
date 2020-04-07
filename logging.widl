@@ -1,0 +1,7 @@
+namespace "wascc:logging"
+
+"All of the operations supported."
+interface {
+    "Function called by the actor to write a log entry"
+    write(level: u32, body: string): void
+}

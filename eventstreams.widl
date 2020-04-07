@@ -1,0 +1,41 @@
+namespace "wascc:eventstreams"
+
+"All of the operations supported."
+interface {
+  "Function called when an actor handles receipt of an event from a stream"
+  deliverEvent(eventId: string, stream: string, values: {string: string}): void @operation(name: "DeliverEvent")
+  "Called by an actor to write an event to a stream"
+  writeEvent(eventId: string, stream: string, values: {string: string}): WriteResponse @operation(name: "WriteEvent")
+  "Called by an actor to query the contents of a stream"
+  queryStream(streamId: string, range: TimeRange, count: u64): StreamResults @operation(name: "QueryStream")
+}
+
+"The results returned from the capability provider after a stream write"
+type WriteResponse {
+  "The ID of the event written"
+  eventId: string
+}
+
+"The results returned from the capability provider after querying a stream"
+type StreamResults {
+  "The events returned from the query"
+  events: [Event]
+}
+
+"Represents a single, immutable event"
+type Event {
+  "The ID of the event"
+  eventId: string
+  "The stream in which the event resides"
+  stream: string
+  "The value map for the event"
+  values: {string: string}
+}
+
+"Represents a time window for queries"
+type TimeRange {
+  "Minimum time in milliseconds since the epoch"
+  minTime: u64
+  "Maximum time in milliseconds since the epoch"
+  maxTime: u64
+}

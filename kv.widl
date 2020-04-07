@@ -1,0 +1,13 @@
+namespace "wascc:keyvalue"
+
+"All the functions supported."
+interface {
+  "Sets a key"
+  set(key: string, value: string, expires: i32): SetResponse @operation(name: "Set")
+}
+
+"Response to a set request"
+type SetResponse {
+    "The value of the response"
+    value: string
+}
