@@ -1,0 +1,33 @@
+namespace "wascc:httpserver"
+
+"All the functions supported."
+interface {
+  "Handles an HTTP request"
+  handleRequest{request: Request}: Response @operation(name: "HandleRequest")
+}
+
+"Represents an HTTP request, handled by the guest module"
+type Request {
+  "The HTTP method."
+  method: string
+  "The path."
+  path: string
+  "The raw query string."
+  queryString: string
+  "The HTTP request headers."
+  header: {string : string}
+  "The payload of the HTTP request"
+  body: bytes
+}
+
+"Represents an HTTP response that the guest module would like to return in response to a request command."
+type Response {
+  "The HTTP status code."
+  statusCode: u32
+  "The HTTP status name."
+  status: string
+  "The HTTP request headers."
+  header: {string : string}
+  "The payload of the HTTP response"
+  body: bytes
+}

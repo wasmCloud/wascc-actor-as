@@ -1,0 +1,31 @@
+namespace "wascc:messaging"
+
+"All of the operations supported."
+interface {
+  "Publish a message from the actor"
+  publishMessage{message: BrokerMessage}: void @operation(name: "Publish")
+  "Receive a message from a subscription"
+  deliverMessage{message: BrokerMessage}: void @operation(name: "DeliverMessage")
+  "Request a response on a subject"
+  request{request: RequestMessage}: bytes @operation(name: "Request")
+}
+
+"A message published or received through a broker"
+type BrokerMessage {
+    "The subject or topic on which the message is sent"
+    subject: string
+    "An optional reply-to subject"
+    replyTo: string?
+    "The body of the message"
+    body: bytes
+}
+
+"A message published in anticipation of a reply"
+type RequestMessage {
+    "The subject or topic on which the request is sent. Note that the reply topic generation is up to the provider"
+    subject: string
+    "The body of the message"
+    body: bytes
+    "Timeout (in milliseconds) to await a reply"
+    timeout: i64
+}
